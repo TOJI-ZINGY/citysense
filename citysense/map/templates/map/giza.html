@@ -1,0 +1,49 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Map of {{ city }}</title>
+  </head>
+  <body>
+    <h1>Map of {{ city }}</h1>
+    <div id="map"></div>
+
+    <script>
+      const cityName = "{{ city }}";
+
+      async function initMap() {
+        try {
+          const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(cityName)}&key={{ apikey }}`);
+          const data = await response.json();
+
+          if (data.status === "OK") {
+            const location = data.results[0].geometry.location;
+            const map = new google.maps.Map(document.getElementById("map"), {
+              zoom: 10,
+              center: location,
+            });
+            new google.maps.Marker({
+              position: location,
+              map: map,
+              title: cityName,
+            });
+          } else {
+            document.getElementById("map").innerText = "City not found.";
+          }
+        } catch (error) {
+          console.error(error);
+          document.getElementById("map").innerText = "Error loading map.";
+        }
+      }
+    </script>
+
+    <script
+      async
+      defer
+      src="https://maps.googleapis.com/maps/api/js?key={{ apikey }}&callback=initMap">
+    </script>
+
+    <!-- idk what the data code will be like but js know that it will prob be a variable prob smt like a list -->
+  </body>
+</html>
