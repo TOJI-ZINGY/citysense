@@ -2,57 +2,235 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CitySense Map</title>
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CitySense - Sustainable Urban Planning Platform</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="logo">
+          <i class="fas fa-globe-americas"></i>
+          <h1>CitySense</h1>
+        </div>
+        <div class="search-container">
+          <i class="fas fa-search search-icon"></i>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Search for a city..."
+          />
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-outline">Help</button>
+          <button class="btn btn-primary">Sign In</button>
+        </div>
+      </header>
 
-  <header>
-    <h1>CitySense</h1>
-    <div class="search-container">
-      <input type="text" id="search-input" placeholder="Search location..." />
-      <button id="search-btn"><i class="fa fa-search"></i></button>
+      <aside class="sidebar">
+        <div class="city-info">
+          <h3 id="sidebar-city-name">New York City</h3>
+          <p>
+            <i class="fas fa-map-marker-alt"></i>
+            <span id="sidebar-city-country">United States</span>
+          </p>
+          <p>
+            <i class="fas fa-users"></i> Population:
+            <span id="sidebar-population">8.4 million</span>
+          </p>
+        </div>
+
+        <div class="sidebar-section">
+          <h2><i class="fas fa-temperature-high"></i> Climate Data</h2>
+          <div class="data-category">
+            <div class="data-item">
+              <span class="data-label">Temperature</span>
+              <span class="data-value" id="sidebar-temperature">72°F</span>
+            </div>
+            <div class="data-item">
+              <span class="data-label">Rainfall</span>
+              <span class="data-value" id="sidebar-rainfall"
+                >3.2 in <span class="data-trend trend-up">+12%</span></span
+              >
+            </div>
+            <div class="data-item">
+              <span class="data-label">Humidity</span>
+              <span class="data-value" id="sidebar-humidity">65%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <h2><i class="fas fa-seedling"></i> Environment</h2>
+          <div class="data-category">
+            <div class="data-item">
+              <span class="data-label">Vegetation Index</span>
+              <span class="data-value" id="sidebar-vegetation"
+                >0.42 <span class="data-trend trend-up">+5%</span></span
+              >
+            </div>
+            <div class="data-item">
+              <span class="data-label">Air Quality</span>
+              <span class="data-value" id="sidebar-air-quality">Moderate</span>
+            </div>
+            <div class="data-item">
+              <span class="data-label">Soil Type</span>
+              <span class="data-value" id="sidebar-soil-type">Loam</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <h2><i class="fas fa-chart-line"></i> Urban Metrics</h2>
+          <div class="data-category">
+            <div class="data-item">
+              <span class="data-label">Population Growth</span>
+              <span class="data-value" id="sidebar-population-growth"
+                >1.2% <span class="data-trend trend-up">+0.3%</span></span
+              >
+            </div>
+            <div class="data-item">
+              <span class="data-label">Traffic Density</span>
+              <span class="data-value" id="sidebar-traffic-density">High</span>
+            </div>
+            <div class="data-item">
+              <span class="data-label">Urban Expansion</span>
+              <span class="data-value" id="sidebar-urban-expansion"
+                >+2.1% YoY</span
+              >
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main>
+        <div class="globe-container" id="globe">
+          <script
+            async
+            defer
+            src="https://maps.googleapis.com/maps/api/js?key={{ apikey }}&callback=initMap"
+          ></script>
+          <div class="globe-controls">
+            <button class="control-btn"><i class="fas fa-plus"></i></button>
+            <button class="control-btn"><i class="fas fa-minus"></i></button>
+            <button class="control-btn"><i class="fas fa-sync"></i></button>
+          </div>
+        </div>
+
+        <div class="data-overview">
+          <div class="metric-card">
+            <div class="metric-header">
+              <h4>Temperature</h4>
+              <div class="metric-icon icon-temperature">
+                <i class="fas fa-thermometer-half"></i>
+              </div>
+            </div>
+            <div class="metric-title">Current Average</div>
+            <div class="metric-value" id="metric-temperature">72°F</div>
+            <div class="metric-change">
+              <span class="metric-trend trend-up"
+                ><i class="fas fa-arrow-up"></i> 2°</span
+              >
+              <span>from last month</span>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <h4>Rainfall</h4>
+              <div class="metric-icon icon-rainfall">
+                <i class="fas fa-cloud-rain"></i>
+              </div>
+            </div>
+            <div class="metric-title">Last 30 Days</div>
+            <div class="metric-value" id="metric-rainfall">3.2 in</div>
+            <div class="metric-change">
+              <span class="metric-trend trend-up"
+                ><i class="fas fa-arrow-up"></i> 12%</span
+              >
+              <span>from average</span>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <h4>Population</h4>
+              <div class="metric-icon icon-population">
+                <i class="fas fa-users"></i>
+              </div>
+            </div>
+            <div class="metric-title">Metro Area</div>
+            <div class="metric-value" id="metric-population">8.4M</div>
+            <div class="metric-change">
+              <span class="metric-trend trend-up"
+                ><i class="fas fa-arrow-up"></i> 1.2%</span
+              >
+              <span>annual growth</span>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <h4>Air Quality</h4>
+              <div class="metric-icon icon-pollution">
+                <i class="fas fa-wind"></i>
+              </div>
+            </div>
+            <div class="metric-title">PM2.5 Index</div>
+            <div class="metric-value" id="metric-air-quality">42</div>
+            <div class="metric-change">
+              <span class="metric-trend trend-down"
+                ><i class="fas fa-arrow-down"></i> 8%</span
+              >
+              <span>from last year</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="predictions-section">
+          <h2><i class="fas fa-crystal-ball"></i> Future Projections</h2>
+          <div class="prediction-cards">
+            <!-- Prediction cards would go here in a complete implementation -->
+          </div>
+        </div>
+      </main>
     </div>
-  </header>
 
-  <main>
-    <div id="map"></div>
-    
-    <aside id="sidebar">
-      <h2 id="city-title">City Data</h2>
-      <ul>
-        <li id="population"><i class="fa-solid fa-users"></i> Population: </li>
-        <li id="temperature"><i class="fa-solid fa-temperature-high"></i> Temperature: </li>
-        <li id="soil"><i class="fa-solid fa-seedling"></i> Soil: </li>
-        <li id="vegetation"><i class="fa-solid fa-tree"></i> Vegetation: </li>
-        <li id="pollution"><i class="fa-solid fa-smog"></i> Pollution: </li>
-        <li id="hazards"><i class="fa-solid fa-triangle-exclamation"></i> Hazards: </li>
-      </ul>
-    </aside>
-  </main>
-  
-  <div class="timeline-controls">
-    <label for="year-slider">Year: <span id="year-label">2025</span></label>
-    <input type="range" id="year-slider" min="2025" max="2035" value="2025" step="5">
-    <button id="toggle-btn">Toggle Current/Future</button>
-  </div>
-  
-  <footer>
-    <div id="chatbot-window">
-      <div id="chatbot-header">Chatbot</div>
-      <div id="chatbot-messages"></div>
-      <input type="text" id="chatbot-input" placeholder="Type a message..." />
+    <div class="chatbot-container">
+      <button class="chatbot-btn" id="chatbotToggle">
+        <i class="fas fa-robot"></i>
+      </button>
+      <div class="chatbot-window" id="chatbotWindow">
+        <div class="chat-header">
+          <h3><i class="fas fa-robot"></i> CitySense Assistant</h3>
+          <button class="chat-close" id="chatClose">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+          <div class="message bot">
+            Hello! I'm your CitySense assistant. How can I help you with urban
+            planning data today?
+          </div>
+        </div>
+        <div class="chat-input">
+          <input
+            type="text"
+            placeholder="Ask about city data..."
+            id="chatInput"
+          />
+          <button id="chatSend"><i class="fas fa-paper-plane"></i></button>
+        </div>
+      </div>
     </div>
-    <button id="chatbot-btn">💬</button>
-  </footer>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="map.js"></script>
-</body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="{% static 'js/map.js'%}"></script>
+  </body>
 </html>
-    
