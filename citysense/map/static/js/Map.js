@@ -8,9 +8,9 @@ let leafletMarker = null;
 let boundaryLayer = null;
 
 async function initMap(cityName = "The New Valley Governorate") {
-  const mapEl = document.getElementById('map');
+  const mapEl = document.getElementById("map");
   if (!mapEl) {
-    console.error('initMap: #map element not found');
+    console.error("initMap: #map element not found");
     return;
   }
 
@@ -18,12 +18,16 @@ async function initMap(cityName = "The New Valley Governorate") {
     // Initialize map if not already
     if (!leafletMap) {
       // Set a default center (world view) until geocode succeeds
-      leafletMap = L.map('map', { zoomControl: true }).setView([26.8206, 30.8025], 5);
+      leafletMap = L.map("map", { zoomControl: true }).setView(
+        [26.8206, 30.8025],
+        5
+      );
 
       // Add OpenStreetMap tile layer
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       }).addTo(leafletMap);
     }
 
@@ -31,17 +35,24 @@ async function initMap(cityName = "The New Valley Governorate") {
     // variants when the first lookup returns no results (e.g. 'The New Valley' -> 'New Valley Governorate, Egypt').
     async function geocodeOnce(query) {
       // Request polygon_geojson where available and boundingbox
-      const url = `https://nominatim.openstreetmap.org/search?format=json&polygon_geojson=1&addressdetails=1&q=${encodeURIComponent(query)}&limit=1`;
+      const url = `https://nominatim.openstreetmap.org/search?format=json&polygon_geojson=1&addressdetails=1&q=${encodeURIComponent(
+        query
+      )}&limit=1`;
       const resp = await fetch(url, {
-        headers: { 'Accept-Language': 'en-US' }
+        headers: { "Accept-Language": "en-US" },
       });
       if (!resp.ok) {
-        console.error('Nominatim request failed for', query, resp.status, resp.statusText);
+        console.error(
+          "Nominatim request failed for",
+          query,
+          resp.status,
+          resp.statusText
+        );
         return null;
       }
-  const json = await resp.json();
+      const json = await resp.json();
       // Log full response for debugging (can be noisy)
-      console.debug('Nominatim response for', query, json);
+      console.debug("Nominatim response for", query, json);
       if (!json || json.length === 0) return null;
       return json[0];
     }
@@ -50,12 +61,12 @@ async function initMap(cityName = "The New Valley Governorate") {
     const candidates = [
       cityName,
       // remove leading 'The ' if present
-      cityName.replace(/^The\s+/i, ''),
+      cityName.replace(/^The\s+/i, ""),
       // append country (Egypt) as many of your places are in Egypt
       `${cityName}, Egypt`,
-      `${cityName.replace(/^The\s+/i, '')}, Egypt`,
-      'el wadi, Egypt',
-      'New Valley Governorate, Egypt'
+      `${cityName.replace(/^The\s+/i, "")}, Egypt`,
+      "el wadi, Egypt",
+      "New Valley Governorate, Egypt",
     ];
 
     let loc = null;
@@ -63,26 +74,30 @@ async function initMap(cityName = "The New Valley Governorate") {
       try {
         loc = await geocodeOnce(q);
         if (loc) {
-          console.info('Geocoding success with query:', q);
+          console.info("Geocoding success with query:", q);
           break;
         }
         // small delay between attempts to be polite to the service
-        await new Promise(r => setTimeout(r, 150));
+        await new Promise((r) => setTimeout(r, 150));
       } catch (e) {
-        console.warn('Geocode attempt failed for', q, e);
+        console.warn("Geocode attempt failed for", q, e);
       }
     }
 
     if (!loc) {
-      console.warn('No geocoding results for any candidate of', cityName, candidates);
+      console.warn(
+        "No geocoding results for any candidate of",
+        cityName,
+        candidates
+      );
       // Keep the map at its default view and show a transient popup so the user knows.
       if (leafletMap) {
         const popup = L.popup({ closeOnClick: true })
           .setLatLng(leafletMap.getCenter())
-          .setContent('Location not found on the map.')
+          .setContent("Location not found on the map.")
           .openOn(leafletMap);
       } else {
-        mapEl.innerText = 'City not found on the map.';
+        mapEl.innerText = "City not found on the map.";
       }
       return;
     }
@@ -92,7 +107,11 @@ async function initMap(cityName = "The New Valley Governorate") {
 
     // Remove previous boundary layer if present
     if (boundaryLayer) {
-      try { leafletMap.removeLayer(boundaryLayer); } catch (e) { /* ignore */ }
+      try {
+        leafletMap.removeLayer(boundaryLayer);
+      } catch (e) {
+        /* ignore */
+      }
       boundaryLayer = null;
     }
 
@@ -109,12 +128,28 @@ async function initMap(cityName = "The New Valley Governorate") {
       if (leafletMarker.getTooltip && leafletMarker.getTooltip()) {
         leafletMarker.getTooltip().setContent(cityName);
       } else {
-        leafletMarker.bindTooltip(cityName, { permanent: true, direction: 'top', offset: [0, -10], className: 'map-label' }).openTooltip();
+        leafletMarker
+          .bindTooltip(cityName, {
+            permanent: true,
+            direction: "top",
+            offset: [0, -10],
+            className: "map-label",
+          })
+          .openTooltip();
       }
     } else {
-      leafletMarker = L.marker([lat, lon]).addTo(leafletMap).bindPopup(cityName);
+      leafletMarker = L.marker([lat, lon])
+        .addTo(leafletMap)
+        .bindPopup(cityName);
       // Add a permanent tooltip (label) above the marker
-      leafletMarker.bindTooltip(cityName, { permanent: true, direction: 'top', offset: [0, -10], className: 'map-label' }).openTooltip();
+      leafletMarker
+        .bindTooltip(cityName, {
+          permanent: true,
+          direction: "top",
+          offset: [0, -10],
+          className: "map-label",
+        })
+        .openTooltip();
     }
 
     // If Nominatim returned polygon geojson, draw it. Otherwise use boundingbox if available.
@@ -122,11 +157,18 @@ async function initMap(cityName = "The New Valley Governorate") {
     if (loc.geojson) {
       try {
         boundaryLayer = L.geoJSON(loc.geojson, {
-          style: { color: '#ff6d00', weight: 3, opacity: 0.9, fill: true, fillColor: '#ff6d00', fillOpacity: 0.1 }
+          style: {
+            color: "#ff6d00",
+            weight: 3,
+            opacity: 0.9,
+            fill: true,
+            fillColor: "#ff6d00",
+            fillOpacity: 0.1,
+          },
         }).addTo(leafletMap);
         bounds = boundaryLayer.getBounds();
       } catch (e) {
-        console.warn('Failed to add geojson boundary:', e);
+        console.warn("Failed to add geojson boundary:", e);
       }
     }
 
@@ -134,9 +176,16 @@ async function initMap(cityName = "The New Valley Governorate") {
       // Nominatim boundingbox format: [south, north, west, east] or [south, north, west, east] as strings
       const bb = loc.boundingbox.map(parseFloat);
       // Some responses give [south, north, west, east]
-      const south = bb[0], north = bb[1], west = bb[2], east = bb[3];
+      const south = bb[0],
+        north = bb[1],
+        west = bb[2],
+        east = bb[3];
       bounds = L.latLngBounds([south, west], [north, east]);
-      boundaryLayer = L.rectangle(bounds, { color: '#ff6d00', weight: 2, fillOpacity: 0.05 }).addTo(leafletMap);
+      boundaryLayer = L.rectangle(bounds, {
+        color: "#ff6d00",
+        weight: 2,
+        fillOpacity: 0.05,
+      }).addTo(leafletMap);
     }
 
     // If we have valid bounds, fit the map to them with a dynamic maxZoom
@@ -147,13 +196,14 @@ async function initMap(cityName = "The New Valley Governorate") {
       const areaApprox = latDiff * lonDiff;
 
       let maxZoomCap = 14;
-      if (areaApprox < 0.0005) maxZoomCap = 16; // very small area -> allow deeper zoom
+      if (areaApprox < 0.0005)
+        maxZoomCap = 16; // very small area -> allow deeper zoom
       else if (areaApprox < 0.01) maxZoomCap = 15;
       else if (areaApprox < 0.5) maxZoomCap = 13;
       else if (areaApprox < 5) maxZoomCap = 11;
       else maxZoomCap = 8;
 
-      leafletMap.fitBounds(bounds, { padding: [20,20], maxZoom: maxZoomCap });
+      leafletMap.fitBounds(bounds, { padding: [20, 20], maxZoom: maxZoomCap });
       // Open popup on the marker after fit
       if (leafletMarker) leafletMarker.openPopup();
     } else {
@@ -161,11 +211,10 @@ async function initMap(cityName = "The New Valley Governorate") {
       leafletMap.setView([lat, lon], 10);
       if (leafletMarker) leafletMarker.openPopup();
     }
-
   } catch (err) {
-    console.error('Error in initMap (Leaflet):', err);
-    const el = document.getElementById('map');
-    if (el) el.innerText = 'Error loading map data.';
+    console.error("Error in initMap (Leaflet):", err);
+    const el = document.getElementById("map");
+    if (el) el.innerText = "Error loading map data.";
   }
 }
 
@@ -177,157 +226,332 @@ window.initMap = initMap;
 function initGoogleMap() {
   // Back-compat: if any code calls initGoogleMap, call initMap with default city.
   // This ensures nothing breaks if some code still expects the Google callback.
-  initMap('The New Valley Governorate');
+  initMap("The New Valley Governorate");
 
   // --- Chatbot functionality ---
-  const chatbotToggle = document.getElementById('chatbotToggle');
-  const chatbotWindow = document.getElementById('chatbotWindow');
-  const chatClose = document.getElementById('chatClose');
-  const chatInput = document.getElementById('chatInput');
-  const chatSend = document.getElementById('chatSend');
-  const chatMessages = document.getElementById('chatMessages');
-  const searchInput = document.querySelector('.search-input');
+  const chatbotToggle = document.getElementById("chatbotToggle");
+  const chatbotWindow = document.getElementById("chatbotWindow");
+  const chatClose = document.getElementById("chatClose");
+  const chatInput = document.getElementById("chatInput");
+  const chatSend = document.getElementById("chatSend");
+  const chatMessages = document.getElementById("chatMessages");
+  const searchInput = document.querySelector(".search-input");
 
-  if (chatbotToggle) { // Add checks for elements to prevent errors if not found
-    chatbotToggle.addEventListener('click', () => {
-        chatbotWindow.classList.toggle('active');
+  if (chatbotToggle) {
+    // Add checks for elements to prevent errors if not found
+    chatbotToggle.addEventListener("click", () => {
+      chatbotWindow.classList.toggle("active");
     });
   }
 
   if (chatClose) {
-    chatClose.addEventListener('click', () => {
-        chatbotWindow.classList.remove('active');
+    chatClose.addEventListener("click", () => {
+      chatbotWindow.classList.remove("active");
     });
   }
 
   function addMessage(text, isUser = false) {
-      const messageDiv = document.createElement('div');
-      messageDiv.classList.add('message');
-      messageDiv.classList.add(isUser ? 'user' : 'bot');
+    const messageDiv = document.createElement("div");
+    messageDiv.classList.add("message");
+    messageDiv.classList.add(isUser ? "user" : "bot");
+    // For user messages keep plain text to avoid unintended HTML.
+    // For bot messages, run a small, safe markdown-like renderer that
+    // supports bold, lists and simple pipe-tables and preserves newlines.
+    if (isUser) {
       messageDiv.textContent = text;
-      chatMessages.appendChild(messageDiv);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
+      messageDiv.style.whiteSpace = 'pre-wrap';
+      messageDiv.style.wordBreak = 'break-word';
+    } else {
+      // Render limited markdown -> safe HTML
+      messageDiv.innerHTML = renderMarkdownToHTML(text);
+    }
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  // Small, safe markdown-ish renderer for bot messages. It first escapes
+  // HTML then converts a few useful patterns: **bold**, unordered/ordered
+  // lists, and pipe-delimited tables. It is intentionally minimal to avoid
+  // needing a heavy dependency and to keep rendering safe.
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function inlineFormat(s) {
+    // Bold **text**
+    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    // Italic _text_
+    s = s.replace(/_(.+?)_/g, '<em>$1</em>');
+    // Simple inline code `code`
+    s = s.replace(/`([^`]+?)`/g, '<code>$1</code>');
+    return s;
+  }
+
+  function renderMarkdownToHTML(text) {
+    if (!text) return '';
+    const lines = text.replace(/\r\n/g,'\n').split('\n');
+    const blocks = [];
+    let i = 0;
+    while (i < lines.length) {
+      const line = lines[i];
+      // Table block: contiguous lines containing '|'
+      if (line.indexOf('|') !== -1) {
+        const tableLines = [];
+        while (i < lines.length && lines[i].indexOf('|') !== -1) {
+          tableLines.push(lines[i]);
+          i++;
+        }
+        // Parse table: split rows by '|' and trim
+        const rows = tableLines.map(r => r.split('|').map(c => c.trim()).filter((v, idx, arr) => !(v === '' && (idx === 0 || idx === arr.length-1))));
+        // If second row is a separator like ---, skip it
+        if (rows.length > 1 && rows[1].every(cell => /^-+$/.test(cell.replace(/[^-]/g,'')))) {
+          rows.splice(1,1);
+        }
+        if (rows.length > 0) {
+          let html = '<table class="chat-table"><thead>';
+          const headers = rows[0];
+          html += '<tr>' + headers.map(h => `<th>${inlineFormat(escapeHtml(h))}</th>`).join('') + '</tr>';
+          html += '</thead><tbody>';
+          for (let r = 1; r < rows.length; r++) {
+            html += '<tr>' + rows[r].map(c => `<td>${inlineFormat(escapeHtml(c))}</td>`).join('') + '</tr>';
+          }
+          html += '</tbody></table>';
+          blocks.push(html);
+        }
+        continue;
+      }
+
+      // Unordered list block
+      if (/^\s*([\-\+\*])\s+/.test(line)) {
+        const items = [];
+        while (i < lines.length && /^\s*([\-\+\*])\s+/.test(lines[i])) {
+          items.push(lines[i].replace(/^\s*([\-\+\*])\s+/, ''));
+          i++;
+        }
+        const html = '<ul>' + items.map(it => `<li>${inlineFormat(escapeHtml(it))}</li>`).join('') + '</ul>';
+        blocks.push(html);
+        continue;
+      }
+
+      // Ordered list block
+      if (/^\s*\d+\.\s+/.test(line)) {
+        const items = [];
+        while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i])) {
+          items.push(lines[i].replace(/^\s*\d+\.\s+/, ''));
+          i++;
+        }
+        const html = '<ol>' + items.map(it => `<li>${inlineFormat(escapeHtml(it))}</li>`).join('') + '</ol>';
+        blocks.push(html);
+        continue;
+      }
+
+      // Otherwise, normal paragraph or plain line. Preserve blank lines as paragraph separators.
+      if (line.trim() === '') {
+        // represent blank line as a paragraph gap
+        blocks.push('<p></p>');
+        i++;
+        continue;
+      }
+      // Collect contiguous non-empty, non-list, non-table lines into one paragraph
+      const paraLines = [];
+      while (i < lines.length && lines[i].trim() !== '' && lines[i].indexOf('|') === -1 && !/^\s*([\-\+\*])\s+/.test(lines[i]) && !/^\s*\d+\.\s+/.test(lines[i])) {
+        paraLines.push(lines[i]);
+        i++;
+      }
+      const para = inlineFormat(escapeHtml(paraLines.join('\n'))).replace(/\n/g, '<br>');
+      blocks.push(`<p>${para}</p>`);
+    }
+
+    return blocks.join('\n');
   }
 
   function sendMessage() {
-      const message = chatInput.value.trim();
-      if (message) {
-          addMessage(message, true);
-          chatInput.value = '';
+    const message = chatInput.value.trim();
+    if (message) {
+      addMessage(message, true);
+      chatInput.value = "";
 
-          setTimeout(() => {
-              const responses = [
-                  "Based on current data, New York's temperature is expected to rise by 1.5°F over the next decade.",
-                  "Urban expansion in this area has increased by 2.1% year-over-year, primarily in residential zones.",
-                  "The vegetation index shows improvement in 3 of the 5 boroughs compared to last year.",
-                  "Traffic density is highest in Manhattan during weekdays between 8-9 AM and 5-6 PM.",
-                  "Air quality has improved by 8% since last year due to new environmental policies.",
-                  "To predict future scenarios, I need more specific parameters. Could you elaborate on what you're interested in?",
-                  "I can provide data on population growth, environmental risks, and urban expansion. Which one would you like to know more about?",
-                  "For detailed insights, please specify the time frame or specific area within the city."
-              ];
-              const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-              addMessage(randomResponse);
-          }, 1000);
-      }
+      const SPECIFIC_INPUT = "design";
+  const SPECIFIC_ANSWER = `📍 Basic Information
+- Total Area: 30 km²
+- Population Density: 5,000 people/km²
+- Total Population: 150,000 residents
+- Total Households: 37,500
+- Housing Units: 37,500 units (each ≈ 260 m²)
+- City Type: A modern, medium-density smart city combining environmental comfort and integrated services ("Balanced Smart City").
+
+📊 Land Use Distribution
+| Category | Percentage | Area (km²) | Description |
+|-----------|-------------|------------|--------------|
+| 🏘 Residential | 33% | 9.9 | Low, medium, and high-density neighborhoods with balanced access to nearby services |
+| 🚗 Roads & Transport | 15% | 4.5 | Main ring roads + secondary roads + pedestrian and bike lanes |
+| 🏥 Service Facilities (Education, Health, Government, Commercial) | 12% | 3.6 | Schools, hospitals, government centers, public offices, small commercial complexes |
+| 🌳 Green Areas | 15% | 4.5 | Public parks, green corridors, rooftop gardens |
+| ⚙ Infrastructure | 10% | 3.0 | Water, electricity, wastewater, and recycling stations |
+| 🏢 Mixed-use (Commercial + Recreational + Cultural) | 15% | 4.5 | Public squares, main promenade, cultural and open commercial areas |
+
+🏗 Public Facilities & Services
+| Category | Approx. Count | Notes |
+|-----------|----------------|--------|
+| 🏫 Schools | 38 | 20 primary + 12 secondary + 6 technical/nurseries |
+| 🏥 Health Centers | 15 | Distributed within neighborhoods |
+| 🏨 Hospitals | 2 | One general + one specialized (300–400 beds) |
+| 🏛 Government Buildings | 3–4 | City hall, service offices, police & fire stations |
+| 🏬 Commercial Shops | ~10,000 | Along main and mixed-use streets |
+| 🏞 Public Parks | 12–15 | One large central park + smaller local parks |
+| 🚲 Pedestrian & Cycling Paths | ~25 km | Connecting neighborhoods, facilities, and parks |
+| 🛣 Total Roads | ~85 km | 18 km main + 40 km secondary + 27 km pedestrian/service roads |
+
+🧭 Urban Structure Overview
+- Central Zone: Located in the middle — includes the main mall, general hospital, city hall, and central park.
+- Residential Areas: Surround the center with three density levels (low–medium–high).
+- Education & Health Services: Evenly distributed so no home is more than 1 km away from a school or health center.
+- Green Network: Continuous corridors connecting the central park to peripheral areas.
+- Transportation: Main axes (40–60 m wide) with electric buses and stops every 1 km.
+
+⚙ Why These Numbers Are Ideal
+- Density (5,000 people/km²): Within UN-Habitat’s balanced city standards.
+- Green Space (30 m²/person): Meets WHO’s livability criteria.
+- Service Distribution: Based on GOPP (Egypt) planning standards for easy accessibility.
+- 15-Minute City Model: All daily needs within a 15-minute walking radius.
+`;
+      const NORMAL_RESPONSES = "Based on current data, i cannot help you with that please provide aditional data";
+
+      setTimeout(() => {
+        try {
+          const normalized = (message || "").toLowerCase();
+          if (
+            SPECIFIC_INPUT &&
+            normalized.includes(SPECIFIC_INPUT.toLowerCase())
+          ) {
+            addMessage(SPECIFIC_ANSWER);
+          } else {
+            const randomResponse = NORMAL_RESPONSES;
+            addMessage(randomResponse);
+          }
+        } catch (e) {
+          console.error("Error while generating bot response:", e);
+          addMessage("Sorry, something went wrong generating the response.");
+        }
+      }, 1000);
+    }
   }
 
   if (chatSend) {
-    chatSend.addEventListener('click', sendMessage);
+    chatSend.addEventListener("click", sendMessage);
   }
   if (chatInput) {
-    chatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
+    chatInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        sendMessage();
+      }
     });
   }
 
   // --- Search functionality ---
   const cityData = {
-      "el wadi": { // Corrected key to match default load
-          name: "The New Valley Governorate",
-          country: "Egypt",
-          population: "161130",
-          temperature: "23°c",
-          rainfall: "0",
-          humidity: "12%",
-          vegetation: "0.17",
-          airQuality: "Moderate",
-          soilType: "Sandy",
-          populationGrowth: "2.23%",
-          trafficDensity: "Sparse",
-          urbanExpansion: "+1.6% YoY"
-      },
-      "london": {
-          name: "London",
-          country: "United Kingdom",
-          population: "8.9 million",
-          temperature: "60°F",
-          rainfall: "2.5 in",
-          humidity: "75%",
-          vegetation: "0.55",
-          airQuality: "Good",
-          soilType: "Clay",
-          populationGrowth: "0.8%",
-          trafficDensity: "Very High",
-          urbanExpansion: "+1.5% YoY"
-      },
-      "tokyo": {
-          name: "Tokyo",
-          country: "Japan",
-          population: "14 million",
-          temperature: "78°F",
-          rainfall: "4.1 in",
-          humidity: "70%",
-          vegetation: "0.38",
-          airQuality: "Moderate",
-          soilType: "Volcanic",
-          populationGrowth: "0.5%",
-          trafficDensity: "High",
-          urbanExpansion: "+0.9% YoY"
-      }
+    "el wadi": {
+      // Corrected key to match default load
+      name: "The New Valley Governorate",
+      country: "Egypt",
+      population: "161130",
+      temperature: "23°c",
+      rainfall: "0",
+      humidity: "12%",
+      vegetation: "0.17",
+      airQuality: "Moderate",
+      soilType: "Sandy",
+      populationGrowth: "2.23%",
+      trafficDensity: "Sparse",
+      urbanExpansion: "+1.6% YoY",
+    },
+    london: {
+      name: "London",
+      country: "United Kingdom",
+      population: "8.9 million",
+      temperature: "60°F",
+      rainfall: "2.5 in",
+      humidity: "75%",
+      vegetation: "0.55",
+      airQuality: "Good",
+      soilType: "Clay",
+      populationGrowth: "0.8%",
+      trafficDensity: "Very High",
+      urbanExpansion: "+1.5% YoY",
+    },
+    tokyo: {
+      name: "Tokyo",
+      country: "Japan",
+      population: "14 million",
+      temperature: "78°F",
+      rainfall: "4.1 in",
+      humidity: "70%",
+      vegetation: "0.38",
+      airQuality: "Moderate",
+      soilType: "Volcanic",
+      populationGrowth: "0.5%",
+      trafficDensity: "High",
+      urbanExpansion: "+0.9% YoY",
+    },
   };
 
   function updateCityData(cityKey) {
-      const data = cityData[cityKey.toLowerCase()];
-      if (data) {
-          document.getElementById('sidebar-city-name').textContent = data.name;
-          document.getElementById('sidebar-city-country').textContent = data.country;
-          document.getElementById('sidebar-population').textContent = data.population;
-          document.getElementById('sidebar-temperature').textContent = data.temperature;
-          document.getElementById('sidebar-rainfall').textContent = data.rainfall.replace('0', 'Zero');
-          document.getElementById('sidebar-humidity').textContent = data.humidity;
-          document.getElementById('sidebar-vegetation').textContent = data.vegetation;
-          document.getElementById('sidebar-air-quality').textContent = data.airQuality;
-          document.getElementById('sidebar-soil-type').textContent = data.soilType;
-          document.getElementById('sidebar-population-growth').textContent = data.populationGrowth;
-          document.getElementById('sidebar-traffic-density').textContent = data.trafficDensity;
-          document.getElementById('sidebar-urban-expansion').textContent = data.urbanExpansion;
+    const data = cityData[cityKey.toLowerCase()];
+    if (data) {
+      document.getElementById("sidebar-city-name").textContent = data.name;
+      document.getElementById("sidebar-city-country").textContent =
+        data.country;
+      document.getElementById("sidebar-population").textContent =
+        data.population;
+      document.getElementById("sidebar-temperature").textContent =
+        data.temperature;
+      document.getElementById("sidebar-rainfall").textContent =
+        data.rainfall.replace("0", "Zero");
+      document.getElementById("sidebar-humidity").textContent = data.humidity;
+      document.getElementById("sidebar-vegetation").textContent =
+        data.vegetation;
+      document.getElementById("sidebar-air-quality").textContent =
+        data.airQuality;
+      document.getElementById("sidebar-soil-type").textContent = data.soilType;
+      document.getElementById("sidebar-population-growth").textContent =
+        data.populationGrowth;
+      document.getElementById("sidebar-traffic-density").textContent =
+        data.trafficDensity;
+      document.getElementById("sidebar-urban-expansion").textContent =
+        data.urbanExpansion;
 
-          document.getElementById('metric-temperature').textContent = data.temperature;
-          document.getElementById('metric-rainfall').textContent = data.rainfall;
-          document.getElementById('metric-population').textContent = data.population.replace(' million', 'M');
-          document.getElementById('metric-air-quality').textContent = data.airQuality === "Good" ? "25" : "36";
+      document.getElementById("metric-temperature").textContent =
+        data.temperature;
+      document.getElementById("metric-rainfall").textContent = data.rainfall;
+      document.getElementById("metric-population").textContent =
+        data.population.replace(" million", "M");
+      document.getElementById("metric-air-quality").textContent =
+        data.airQuality === "Good" ? "25" : "36";
 
-          addMessage(`Data for ${data.name} has been loaded. How can I assist you further?`);
+      addMessage(
+        `Data for ${data.name} has been loaded. How can I assist you further?`
+      );
 
-          initMap(data.name);
-
-      } else {
-          alert("City data not found. Try 'el wadi'.");
-          addMessage("I couldn't find data for that city. Please try 'el wadi'.");
-      }
+      initMap(data.name);
+    } else {
+      alert("City data not found. Try 'el wadi'.");
+      addMessage("I couldn't find data for that city. Please try 'el wadi'.");
+    }
   }
 
   if (searchInput) {
-    searchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            const city = searchInput.value.trim();
-            if (city) {
-                updateCityData(city);
-            }
+    searchInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        const city = searchInput.value.trim();
+        if (city) {
+          updateCityData(city);
         }
+      }
     });
   }
 
@@ -336,8 +560,8 @@ function initGoogleMap() {
 }
 
 // Automatically initialize when the document is ready.
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initGoogleMap);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initGoogleMap);
 } else {
   // DOM already ready
   initGoogleMap();
@@ -355,37 +579,37 @@ if (document.readyState === 'loading') {
 // }
 
 function renderCity2DFromJSON(json) {
-  const container = document.getElementById('city-2d');
+  const container = document.getElementById("city-2d");
   if (!container) return;
-  container.innerHTML = '';
+  container.innerHTML = "";
 
   let cfg = json;
   // Basic validation
   if (!cfg || !Array.isArray(cfg.layers)) {
-    container.innerText = 'Invalid JSON: missing layers array.';
+    container.innerText = "Invalid JSON: missing layers array.";
     return;
   }
 
-  const svgNS = 'http://www.w3.org/2000/svg';
+  const svgNS = "http://www.w3.org/2000/svg";
   const w = cfg.width || 1000;
   const h = cfg.height || 600;
-  const svg = document.createElementNS(svgNS, 'svg');
-  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-  svg.setAttribute('width', '100%');
-  svg.setAttribute('height', '100%');
-  svg.style.display = 'block';
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  svg.setAttribute("width", "100%");
+  svg.setAttribute("height", "100%");
+  svg.style.display = "block";
 
   // background
-  const bg = document.createElementNS(svgNS, 'rect');
-  bg.setAttribute('x', 0);
-  bg.setAttribute('y', 0);
-  bg.setAttribute('width', w);
-  bg.setAttribute('height', h);
-  bg.setAttribute('fill', '#eaf2ff');
+  const bg = document.createElementNS(svgNS, "rect");
+  bg.setAttribute("x", 0);
+  bg.setAttribute("y", 0);
+  bg.setAttribute("width", w);
+  bg.setAttribute("height", h);
+  bg.setAttribute("fill", "#eaf2ff");
   svg.appendChild(bg);
 
   // Add a subtle drop-shadow filter and text styles for labels
-  const defs = document.createElementNS(svgNS, 'defs');
+  const defs = document.createElementNS(svgNS, "defs");
   defs.innerHTML = `
     <filter id="ds" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.15" />
@@ -396,123 +620,127 @@ function renderCity2DFromJSON(json) {
   // Draw layers in order
   const legendItems = new Map();
   for (const layer of cfg.layers) {
-    const color = layer.color || (layer.type === 'park' ? '#b7e4c7' : (layer.type === 'building' ? '#d9d9d9' : '#888'));
-    const stroke = layer.stroke || (layer.type === 'park' ? '#6bbf76' : '#999');
+    const color =
+      layer.color ||
+      (layer.type === "park"
+        ? "#b7e4c7"
+        : layer.type === "building"
+        ? "#d9d9d9"
+        : "#888");
+    const stroke = layer.stroke || (layer.type === "park" ? "#6bbf76" : "#999");
 
-
-    if (layer.type === 'road' && Array.isArray(layer.path)) {
-      const g = document.createElementNS(svgNS, 'g');
-      g.setAttribute('class', 'city-layer road-layer');
+    if (layer.type === "road" && Array.isArray(layer.path)) {
+      const g = document.createElementNS(svgNS, "g");
+      g.setAttribute("class", "city-layer road-layer");
       // outline stroke (wider, lighter)
-      const outline = document.createElementNS(svgNS, 'path');
-      const d = layer.path.map((p,i) => `${i===0? 'M':'L'} ${p[0]} ${p[1]}`).join(' ');
-      outline.setAttribute('d', d);
-      outline.setAttribute('stroke', layer.outline || '#e0e0e0');
-      outline.setAttribute('stroke-width', (layer.width || 8) + 6);
-      outline.setAttribute('fill', 'none');
-      outline.setAttribute('stroke-linecap', 'round');
-      outline.setAttribute('filter', 'url(#ds)');
+      const outline = document.createElementNS(svgNS, "path");
+      const d = layer.path
+        .map((p, i) => `${i === 0 ? "M" : "L"} ${p[0]} ${p[1]}`)
+        .join(" ");
+      outline.setAttribute("d", d);
+      outline.setAttribute("stroke", layer.outline || "#e0e0e0");
+      outline.setAttribute("stroke-width", (layer.width || 8) + 6);
+      outline.setAttribute("fill", "none");
+      outline.setAttribute("stroke-linecap", "round");
+      outline.setAttribute("filter", "url(#ds)");
       g.appendChild(outline);
 
-      const path = document.createElementNS(svgNS, 'path');
-      path.setAttribute('d', d);
-      path.setAttribute('stroke', layer.stroke || '#888');
-      path.setAttribute('stroke-width', layer.width || 8);
-      path.setAttribute('fill', 'none');
-      path.setAttribute('stroke-linecap', 'round');
+      const path = document.createElementNS(svgNS, "path");
+      path.setAttribute("d", d);
+      path.setAttribute("stroke", layer.stroke || "#888");
+      path.setAttribute("stroke-width", layer.width || 8);
+      path.setAttribute("fill", "none");
+      path.setAttribute("stroke-linecap", "round");
       g.appendChild(path);
 
       // label (hidden until hover)
       if (layer.label) {
         const pts = layer.path;
-        const mid = pts[Math.floor(pts.length/2)];
-        const label = document.createElementNS(svgNS, 'text');
-        label.setAttribute('x', mid[0]);
-        label.setAttribute('y', mid[1] - 12);
-        label.setAttribute('text-anchor', 'middle');
-        label.setAttribute('fill', layer.labelColor || '#222');
-        label.setAttribute('font-size', '12');
-        label.setAttribute('font-weight', '700');
-        label.setAttribute('class', 'city-layer-label');
+        const mid = pts[Math.floor(pts.length / 2)];
+        const label = document.createElementNS(svgNS, "text");
+        label.setAttribute("x", mid[0]);
+        label.setAttribute("y", mid[1] - 12);
+        label.setAttribute("text-anchor", "middle");
+        label.setAttribute("fill", layer.labelColor || "#222");
+        label.setAttribute("font-size", "12");
+        label.setAttribute("font-weight", "700");
+        label.setAttribute("class", "city-layer-label");
         label.textContent = layer.label;
         g.appendChild(label);
       }
 
       svg.appendChild(g);
-      legendItems.set(layer.label || 'Road', layer.stroke || '#888');
-
-
-    } else if (layer.type === 'building') {
-      const g = document.createElementNS(svgNS, 'g');
-      g.setAttribute('class', 'city-layer building-layer');
-      const rect = document.createElementNS(svgNS, 'rect');
-      rect.setAttribute('x', layer.x);
-      rect.setAttribute('y', layer.y);
-      rect.setAttribute('width', layer.w);
-      rect.setAttribute('height', layer.h);
-      rect.setAttribute('rx', layer.rx || 6);
-      rect.setAttribute('ry', layer.ry || 6);
-      rect.setAttribute('fill', layer.fill || color);
-      rect.setAttribute('stroke', layer.stroke || stroke);
-      rect.setAttribute('filter', 'url(#ds)');
+      legendItems.set(layer.label || "Road", layer.stroke || "#888");
+    } else if (layer.type === "building") {
+      const g = document.createElementNS(svgNS, "g");
+      g.setAttribute("class", "city-layer building-layer");
+      const rect = document.createElementNS(svgNS, "rect");
+      rect.setAttribute("x", layer.x);
+      rect.setAttribute("y", layer.y);
+      rect.setAttribute("width", layer.w);
+      rect.setAttribute("height", layer.h);
+      rect.setAttribute("rx", layer.rx || 6);
+      rect.setAttribute("ry", layer.ry || 6);
+      rect.setAttribute("fill", layer.fill || color);
+      rect.setAttribute("stroke", layer.stroke || stroke);
+      rect.setAttribute("filter", "url(#ds)");
       g.appendChild(rect);
       if (layer.label) {
-        const text = document.createElementNS(svgNS, 'text');
-        text.setAttribute('x', layer.x + layer.w/2);
-        text.setAttribute('y', layer.y + layer.h/2 + 4);
-        text.setAttribute('text-anchor', 'middle');
-        text.setAttribute('fill', layer.labelColor || '#333');
-        text.setAttribute('font-size', '12');
-        text.setAttribute('font-weight', '700');
-        text.setAttribute('class', 'city-layer-label');
+        const text = document.createElementNS(svgNS, "text");
+        text.setAttribute("x", layer.x + layer.w / 2);
+        text.setAttribute("y", layer.y + layer.h / 2 + 4);
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("fill", layer.labelColor || "#333");
+        text.setAttribute("font-size", "12");
+        text.setAttribute("font-weight", "700");
+        text.setAttribute("class", "city-layer-label");
         text.textContent = layer.label;
         g.appendChild(text);
       }
       svg.appendChild(g);
-      legendItems.set(layer.label || 'Building', layer.fill || color);
-
-    } else if (layer.type === 'park') {
-      const g = document.createElementNS(svgNS, 'g');
-      g.setAttribute('class', 'city-layer park-layer');
-      const rect = document.createElementNS(svgNS, 'rect');
-      rect.setAttribute('x', layer.x);
-      rect.setAttribute('y', layer.y);
-      rect.setAttribute('width', layer.w);
-      rect.setAttribute('height', layer.h);
-      rect.setAttribute('rx', layer.rx || 4);
-      rect.setAttribute('ry', layer.ry || 4);
-      rect.setAttribute('fill', layer.fill || color);
-      rect.setAttribute('stroke', layer.stroke || stroke);
-      rect.setAttribute('filter', 'url(#ds)');
+      legendItems.set(layer.label || "Building", layer.fill || color);
+    } else if (layer.type === "park") {
+      const g = document.createElementNS(svgNS, "g");
+      g.setAttribute("class", "city-layer park-layer");
+      const rect = document.createElementNS(svgNS, "rect");
+      rect.setAttribute("x", layer.x);
+      rect.setAttribute("y", layer.y);
+      rect.setAttribute("width", layer.w);
+      rect.setAttribute("height", layer.h);
+      rect.setAttribute("rx", layer.rx || 4);
+      rect.setAttribute("ry", layer.ry || 4);
+      rect.setAttribute("fill", layer.fill || color);
+      rect.setAttribute("stroke", layer.stroke || stroke);
+      rect.setAttribute("filter", "url(#ds)");
       g.appendChild(rect);
       if (layer.label) {
-        const text = document.createElementNS(svgNS, 'text');
-        text.setAttribute('x', layer.x + layer.w/2);
-        text.setAttribute('y', layer.y + layer.h/2 + 4);
-        text.setAttribute('text-anchor', 'middle');
-        text.setAttribute('fill', layer.labelColor || '#1b5e20');
-        text.setAttribute('font-size', '12');
-        text.setAttribute('font-weight', '700');
-        text.setAttribute('class', 'city-layer-label');
+        const text = document.createElementNS(svgNS, "text");
+        text.setAttribute("x", layer.x + layer.w / 2);
+        text.setAttribute("y", layer.y + layer.h / 2 + 4);
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("fill", layer.labelColor || "#1b5e20");
+        text.setAttribute("font-size", "12");
+        text.setAttribute("font-weight", "700");
+        text.setAttribute("class", "city-layer-label");
         text.textContent = layer.label;
         g.appendChild(text);
       }
       svg.appendChild(g);
-      legendItems.set(layer.label || 'Park', layer.fill || color);
+      legendItems.set(layer.label || "Park", layer.fill || color);
     }
   }
 
   // Add legend below the svg
-  const legend = document.createElement('div');
-  legend.className = 'city-legend';
+  const legend = document.createElement("div");
+  legend.className = "city-legend";
   for (const [label, color] of legendItems) {
-    const item = document.createElement('div');
-    item.className = 'city-legend-item';
-    const swatch = document.createElement('span');
-    swatch.className = 'city-legend-swatch';
+    const item = document.createElement("div");
+    item.className = "city-legend-item";
+    const swatch = document.createElement("span");
+    swatch.className = "city-legend-swatch";
     swatch.style.background = color;
-    const text = document.createElement('span');
-    text.className = 'city-legend-text';
+    const text = document.createElement("span");
+    text.className = "city-legend-text";
     text.textContent = label;
     item.appendChild(swatch);
     item.appendChild(text);
@@ -527,20 +755,86 @@ const sampleCityJSON = {
   width: 1000,
   height: 600,
   layers: [
-    { type: 'road', id: 'r1', path: [[50,300],[950,300]], width: 14, stroke: '#6c757d', label: 'Main St', labelColor: '#333' },
-    { type: 'road', id: 'r2', path: [[500,50],[500,550]], width: 12, stroke: '#6c757d', label: 'Central Ave', labelColor: '#333' },
-    { type: 'building', id: 'b1', x: 80, y: 220, w: 120, h: 160, label: 'Library', fill: '#f1c40f', stroke: '#b08900', labelColor: '#222' },
-    { type: 'building', id: 'b2', x: 220, y: 240, w: 160, h: 120, label: 'Market', fill: '#d9d9d9', stroke: '#888', labelColor: '#222' },
-    { type: 'park', id: 'p1', x: 420, y: 60, w: 260, h: 120, label: 'Central Park', fill: '#b7e4c7', stroke: '#6bbf76', labelColor: '#145A32' },
-    { type: 'building', id: 'b3', x: 720, y: 240, w: 160, h: 120, label: 'School', fill: '#ffe0b2', stroke: '#c97b00', labelColor: '#222' }
-  ]
+    {
+      type: "road",
+      id: "r1",
+      path: [
+        [50, 300],
+        [950, 300],
+      ],
+      width: 14,
+      stroke: "#6c757d",
+      label: "Main St",
+      labelColor: "#333",
+    },
+    {
+      type: "road",
+      id: "r2",
+      path: [
+        [500, 50],
+        [500, 550],
+      ],
+      width: 12,
+      stroke: "#6c757d",
+      label: "Central Ave",
+      labelColor: "#333",
+    },
+    {
+      type: "building",
+      id: "b1",
+      x: 80,
+      y: 220,
+      w: 120,
+      h: 160,
+      label: "Library",
+      fill: "#f1c40f",
+      stroke: "#b08900",
+      labelColor: "#222",
+    },
+    {
+      type: "building",
+      id: "b2",
+      x: 220,
+      y: 240,
+      w: 160,
+      h: 120,
+      label: "Market",
+      fill: "#d9d9d9",
+      stroke: "#888",
+      labelColor: "#222",
+    },
+    {
+      type: "park",
+      id: "p1",
+      x: 420,
+      y: 60,
+      w: 260,
+      h: 120,
+      label: "Central Park",
+      fill: "#b7e4c7",
+      stroke: "#6bbf76",
+      labelColor: "#145A32",
+    },
+    {
+      type: "building",
+      id: "b3",
+      x: 720,
+      y: 240,
+      w: 160,
+      h: 120,
+      label: "School",
+      fill: "#ffe0b2",
+      stroke: "#c97b00",
+      labelColor: "#222",
+    },
+  ],
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-  const renderBtn = document.getElementById('city2d-render');
-  const sampleBtn = document.getElementById('city2d-sample');
-  const textarea = document.getElementById('city2d-json');
-  const promptEl = document.getElementById('city2d-prompt');
+document.addEventListener("DOMContentLoaded", () => {
+  const renderBtn = document.getElementById("city2d-render");
+  const sampleBtn = document.getElementById("city2d-sample");
+  const textarea = document.getElementById("city2d-json");
+  const promptEl = document.getElementById("city2d-prompt");
 
   // Populate prompt template (simple example) — user can copy this into ChatGPT
   if (promptEl) {
@@ -583,9 +877,10 @@ Example (THIS EXACT FORMAT is required -- a SINGLE JSON object):
 If the model cannot comply exactly, return the word "ERROR" (without quotes) as the entire output so a human can intervene.`;
   }
 
-  if (sampleBtn) sampleBtn.addEventListener('click', () => {
-    textarea.value = JSON.stringify(sampleCityJSON, null, 2);
-  });
+  if (sampleBtn)
+    sampleBtn.addEventListener("click", () => {
+      textarea.value = JSON.stringify(sampleCityJSON, null, 2);
+    });
 
   // Try to be tolerant of common AI/clipboard formatting issues (triple-backticks,
   // surrounding parentheses, pasted sequence of objects without an array/root).
@@ -594,12 +889,12 @@ If the model cannot comply exactly, return the word "ERROR" (without quotes) as 
     let s = text.trim();
 
     // Remove Markdown code fences ```json ... ``` or ``` ... ```
-    s = s.replace(/^```[a-zA-Z0-9]*\n([\s\S]*?)\n```$/m, '$1');
+    s = s.replace(/^```[a-zA-Z0-9]*\n([\s\S]*?)\n```$/m, "$1");
     // Remove single backticks
-    if (/^`[\s\S]*`$/.test(s)) s = s.replace(/^`([\s\S]*)`$/, '$1');
+    if (/^`[\s\S]*`$/.test(s)) s = s.replace(/^`([\s\S]*)`$/, "$1");
 
     // Unwrap a single pair of surrounding parentheses if present
-    while (s.startsWith('(') && s.endsWith(')')) {
+    while (s.startsWith("(") && s.endsWith(")")) {
       // only unwrap when parentheses wrap the whole text (common when models return `( ... )`)
       s = s.slice(1, -1).trim();
     }
@@ -610,7 +905,7 @@ If the model cannot comply exactly, return the word "ERROR" (without quotes) as 
     // repair to help non-expert users; it only runs when we see multiple '"type":'.
     const typeCount = (s.match(/"type"\s*:/g) || []).length;
     const hasRootLayers = /"layers"\s*:\s*\[/.test(s);
-    const isArray = s.startsWith('[');
+    const isArray = s.startsWith("[");
     const hasWidth = /"width"\s*:\s*\d+/.test(s);
 
     if (!hasRootLayers && !isArray && typeCount > 1 && !hasWidth) {
@@ -625,9 +920,9 @@ If the model cannot comply exactly, return the word "ERROR" (without quotes) as 
 
     // Remove trailing commas before closing brackets/braces (common in hand-copied JS/AI output)
     // e.g. '{...}, ]' -> '{...} ]' and '{...}, }' -> '{...} }'
-    s = s.replace(/,(\s*[\]\}])/g, '$1');
+    s = s.replace(/,(\s*[\]\}])/g, "$1");
     // Remove a final trailing comma at the end of the string
-    s = s.replace(/,\s*$/g, '');
+    s = s.replace(/,\s*$/g, "");
 
     // If there are unmatched opening brackets/braces, try to auto-close them
     const openSq = (s.match(/\[/g) || []).length;
@@ -635,10 +930,10 @@ If the model cannot comply exactly, return the word "ERROR" (without quotes) as 
     const openBr = (s.match(/\{/g) || []).length;
     const closeBr = (s.match(/\}/g) || []).length;
     if (openSq > closeSq) {
-      s += ']'.repeat(openSq - closeSq);
+      s += "]".repeat(openSq - closeSq);
     }
     if (openBr > closeBr) {
-      s += '}'.repeat(openBr - closeBr);
+      s += "}".repeat(openBr - closeBr);
     }
 
     // Finally try to parse
@@ -653,16 +948,17 @@ If the model cannot comply exactly, return the word "ERROR" (without quotes) as 
     }
   }
 
-  if (renderBtn) renderBtn.addEventListener('click', () => {
-    try {
-      const val = textarea.value.trim();
-      const parsed = val ? tryParseLooseJSON(val) : sampleCityJSON;
-      if (!parsed) throw new Error('No JSON provided');
-      renderCity2DFromJSON(parsed);
-    } catch (e) {
-      // Show a clearer alert and log the detailed error to console for debugging
-      console.error('JSON parse error:', e);
-      alert('Invalid JSON: ' + e.message);
-    }
-  });
+  if (renderBtn)
+    renderBtn.addEventListener("click", () => {
+      try {
+        const val = textarea.value.trim();
+        const parsed = val ? tryParseLooseJSON(val) : sampleCityJSON;
+        if (!parsed) throw new Error("No JSON provided");
+        renderCity2DFromJSON(parsed);
+      } catch (e) {
+        // Show a clearer alert and log the detailed error to console for debugging
+        console.error("JSON parse error:", e);
+        alert("Invalid JSON: " + e.message);
+      }
+    });
 });

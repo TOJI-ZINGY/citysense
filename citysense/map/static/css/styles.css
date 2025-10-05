@@ -427,8 +427,9 @@ svg text { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; }
   position: absolute;
   bottom: 70px;
   right: 0;
-  width: 350px;
-  height: 450px;
+  /* Increased size for better readability and interaction */
+  width: 700px;
+  height: 600px;
   background-color: white;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
@@ -481,7 +482,8 @@ svg text { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; }
 }
 
 .message {
-  max-width: 80%;
+  /* Allow messages to use more horizontal space inside the larger chat window */
+  max-width: 88%;
   padding: 0.75rem;
   border-radius: 18px;
   font-size: 0.9rem;
@@ -510,15 +512,15 @@ svg text { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; }
 
 .chat-input input {
   flex: 1;
-  padding: 0.75rem;
+  padding: 0.85rem 1rem;
   border: 1px solid #e0e0e0;
-  border-radius: 24px;
+  border-radius: 28px;
   outline: none;
 }
 
 .chat-input button {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background-color: var(--primary);
   color: white;
@@ -565,8 +567,10 @@ svg text { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; }
     right: 1rem;
   }
 
+  /* Slightly reduced size on smaller screens while remaining usable */
   .chatbot-window {
-    width: 300px;
-    height: 400px;
+    width: 420px;
+    height: 560px;
+    bottom: 64px;
   }
 }
