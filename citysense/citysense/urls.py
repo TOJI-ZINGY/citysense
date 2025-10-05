@@ -19,6 +19,6 @@ from django.urls import include, path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('',include(("menue.urls" , 'menue') , namespace = 'menue')),
-    path('map/',include(("map.urls" , 'map') , namespace = 'map'))
+    path('menue/',include(("menue.urls" , 'menue') , namespace = 'menue')),
+    path('',include(("map.urls" , 'map') , namespace = 'map'))
 ]
