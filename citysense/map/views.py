@@ -1,21 +1,6 @@
 from django.shortcuts import render
-from pathlib import Path
-import pandas as pd
 
-apikey = ""
-
-def population():
-    csv_path = Path(__file__).resolve().parent / 'data' / 'wadi_gedid_population.csv'
-    df = pd.read_csv(csv_path)
-    print(df.columns)
-    
-    
-    
-    
-
-# Create your views here.
+# Render the map page. We no longer use the Google Maps API key; the
+# frontend uses Leaflet + Nominatim (OpenStreetMap) instead.
 def giza(request, city):
-    return render(request, "map/giza.html", {
-        'city' : city,
-        'apikey' : apikey
-    })
+    return render(request, "map/giza.html")

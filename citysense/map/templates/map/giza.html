@@ -110,18 +110,7 @@
       </aside>
 
       <main>
-        <div class="globe-container" id="globe">
-          <script
-            async
-            defer
-            src="https://maps.googleapis.com/maps/api/js?key={{ apikey }}&callback=initMap"
-          ></script>
-          <div class="globe-controls">
-            <button class="control-btn"><i class="fas fa-plus"></i></button>
-            <button class="control-btn"><i class="fas fa-minus"></i></button>
-            <button class="control-btn"><i class="fas fa-sync"></i></button>
-          </div>
-        </div>
+        <div id="map"></div>
 
         <div class="data-overview">
           <div class="metric-card">
@@ -198,6 +187,24 @@
           <div class="prediction-cards">
             <!-- Prediction cards would go here in a complete implementation -->
           </div>
+          <!-- 2D City Renderer: paste ChatGPT JSON output and render an SVG representation -->
+          <div id="city-2d-wrapper" style="margin-top:1rem;">
+            <h3>2D City Model</h3>
+            <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;align-items:flex-start;">
+              <textarea id="city2d-json" placeholder="Paste ChatGPT JSON (see prompt template)" style="flex:1;height:150px;padding:8px;border-radius:6px;border:1px solid #ddd;font-family:monospace;resize:vertical;"></textarea>
+              <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                <button id="city2d-render" class="btn btn-primary">Render 2D</button>
+                <button id="city2d-sample" class="btn">Load Sample</button>
+              </div>
+            </div>
+
+            <div id="city-2d" style="width:100%;height:420px;background:#fff;border-radius:8px;box-shadow:var(--card-shadow);overflow:hidden;display:flex;align-items:center;justify-content:center;"></div>
+
+            <details style="margin-top:0.75rem;">
+              <summary>ChatGPT prompt template (click to expand)</summary>
+              <pre id="city2d-prompt" style="white-space:pre-wrap;padding:12px;background:#f8f9fa;border-radius:6px;margin-top:0.5rem;font-size:0.9rem;">{PROMPT_TEMPLATE}</pre>
+            </details>
+          </div>
         </div>
       </main>
     </div>
@@ -229,8 +236,30 @@
         </div>
       </div>
     </div>
+    <!-- Use Leaflet (OpenStreetMap) instead of Google Maps to avoid billing requirement -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="{% static 'js/map.js'%}"></script>
+  <script>
+    // If Leaflet didn't load (CDN blocked), show a helpful message in the map container.
+    (function() {
+      function showLeafletMissing() {
+        const el = document.getElementById('map');
+        if (el) {
+          el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#fff;background:#111;border-radius:8px;">Map failed to load. Leaflet library not available.</div>';
+        }
+      }
+
+      // Give the CDN a moment to load
+      setTimeout(() => {
+        if (typeof L === 'undefined') {
+          console.warn('Leaflet did not load from CDN.');
+          showLeafletMissing();
+        }
+      }, 500);
+    })();
+  </script>
+
+  <script src="{% static 'js/Map.js'%}"></script>
   </body>
 </html>
